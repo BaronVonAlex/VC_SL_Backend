@@ -34,7 +34,6 @@ namespace VC_SL.Controllers
         }
 
         [HttpGet("GetUser")]
-        //[Route("{id:Id}")]
         public IActionResult GetUser(int id)
         {
             var user = _context.Users.FirstOrDefault(x => x.Id == id);
@@ -43,7 +42,6 @@ namespace VC_SL.Controllers
 
             return Ok(user);
         }
-
         [HttpPut("UpdateUser")]
         public IActionResult UpdateUser([FromBody] UpdateUserDto updateUserDto)
         {
@@ -57,13 +55,13 @@ namespace VC_SL.Controllers
 
             if (user == null) {return NotFound($"User with ID {updateUserDto.Id} not found.");}
 
-            user.UsernameHistory = UsernameHistoryHelper.AddUsername(user.UsernameHistory, updateUserDto.UsernameHistory);
+            user.UsernameHistory = UsernameHistoryService.AddUsername(user.UsernameHistory, updateUserDto.UsernameHistory);
 
             user.UpdatedAt = DateTime.Now;
 
             _context.SaveChanges();
 
-            var historyList = UsernameHistoryHelper.DeserializeHistoryToList(user.UsernameHistory);
+            var historyList = UsernameHistoryService.DeserializeHistoryToList(user.UsernameHistory);
 
             return Ok(new
             {

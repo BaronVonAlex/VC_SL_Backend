@@ -2,102 +2,76 @@
 
 namespace VC_SL.Services;
 
-public static class UsernameHistoryHelper
+public static class UsernameHistoryService
 {
-    private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
+    private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true
-    }; // ignore case sensetivity here
+    };
 
-    // here we pass current history json and new name
     public static string AddUsername(string currentHistoryJson, string newUsername)
     {
-        var history = new List<string>();
+        var history = ParseHistory(currentHistoryJson);
+        var newEntries = ParseNewUsername(newUsername);
 
-        if (!string.IsNullOrWhiteSpace(currentHistoryJson))
+        foreach (var entry in newEntries.Where(x => !string.IsNullOrWhiteSpace(x)))
         {
-            try
-            {
-                history = JsonSerializer.Deserialize<List<string>>(currentHistoryJson, JsonOptions) ?? [];
-            }
-            catch
-            {
-                try
-                {
-                    var single = JsonSerializer.Deserialize<string>(currentHistoryJson, JsonOptions);
-                    if (!string.IsNullOrEmpty(single))
-                        history.Add(single);
-                }
-                catch
-                {
-                    history = [];
-                }
-            }
-        } // if dis is valid json then it deserializes it into a List<string>, if fails then it's single string username "a" instead of ["a"], if both fail then empty ;d
-
-        var newEntries = new List<string>();
-        if (!string.IsNullOrWhiteSpace(newUsername))
-        {
-            var trimmed = newUsername.Trim();
-
-            if ((trimmed.StartsWith($"[") && trimmed.EndsWith($"]")) || (trimmed.StartsWith($"\"") && trimmed.EndsWith($"\"")))
-            {
-                try
-                {
-                    var arr = JsonSerializer.Deserialize<List<string>>(newUsername, JsonOptions);
-                    if (arr is { Count: > 0 })
-                    {
-                        newEntries.AddRange(arr);
-                    }
-                    else
-                    {
-                        var single = JsonSerializer.Deserialize<string>(newUsername, JsonOptions);
-                        if (!string.IsNullOrEmpty(single))
-                            newEntries.Add(single);
-                    }
-                }
-                catch
-                {
-                    var cleaned = trimmed.Trim('\"', '[', ']');
-                    if (!string.IsNullOrWhiteSpace(cleaned))
-                        newEntries.Add(cleaned);
-                }
-            }
-            else
-            {
-                newEntries.Add(newUsername);
-            }
+            var trimmed = entry.Trim();
+            if (!history.Contains(trimmed))
+                history.Add(trimmed);
         }
 
-        foreach (var entry in newEntries.Select(x => x.Trim()).Where(x => !string.IsNullOrEmpty(x)))
-        {
-            if (!history.Contains(entry))
-                history.Add(entry);
-        } // dis here trimps spaces from each username, skip empties and add if it's unique
-
-        return JsonSerializer.Serialize(history); //back to json
+        return JsonSerializer.Serialize(history);
     }
 
-    public static List<string> DeserializeHistoryToList(string historyJson) // dis thing just deserializes json to return string list
+    public static List<string> DeserializeHistoryToList(string historyJson)
+        => ParseHistory(historyJson);
+
+    private static List<string> ParseHistory(string historyJson)
     {
         if (string.IsNullOrWhiteSpace(historyJson))
             return [];
 
+        return TryDeserialize<List<string>>(historyJson)
+            ?? (TryDeserialize<string>(historyJson) is string single && !string.IsNullOrEmpty(single)
+                ? [single]
+                : []);
+    }
+
+    private static List<string> ParseNewUsername(string newUsername)
+    {
+        if (string.IsNullOrWhiteSpace(newUsername))
+            return [];
+
+        var trimmed = newUsername.Trim();
+
+        if (IsJsonLike(trimmed))
+        {
+            return TryDeserialize<List<string>>(newUsername)
+                ?? (TryDeserialize<string>(newUsername) is string single && !string.IsNullOrEmpty(single)
+                    ? [single]
+                    : [GetCleanedValue(trimmed)]);
+        }
+
+        return [newUsername];
+    }
+
+    private static T? TryDeserialize<T>(string json)
+    {
         try
         {
-            return JsonSerializer.Deserialize<List<string>>(historyJson, JsonOptions) ?? [];
+            return JsonSerializer.Deserialize<T>(json, JsonOptions);
         }
         catch
         {
-            try
-            {
-                var single = JsonSerializer.Deserialize<string>(historyJson, JsonOptions);
-                if (!string.IsNullOrEmpty(single))
-                    return [single];
-            }
-            catch { }
-
-            return [];
+            return default;
         }
     }
+
+    private static bool IsJsonLike(string value)
+        => (value.StartsWith('[') && value.EndsWith(']')) ||
+           (value.StartsWith('"') && value.EndsWith('"'));
+
+    private static string GetCleanedValue(string value)
+        => value.Trim('"', '[', ']');
 }
