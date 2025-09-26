@@ -23,6 +23,5 @@ namespace VC_SL.Models.Entities
 
         [Column("fleetWinrate")]
         public float? FleetWinrate { get; set; }
-        public User User { get; set; } = null!;
     }
 }

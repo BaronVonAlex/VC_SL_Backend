@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using VC_SL.Data;
 using VC_SL.Models;
 using VC_SL.Services;
@@ -8,19 +7,12 @@ namespace VC_SL.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UsersController : ControllerBase
+    public class UsersController(ApplicationDbContext context) : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
-
-        public UsersController(ApplicationDbContext context)
-        {
-            _context = context;
-        }
-
         [HttpGet]
         public IActionResult GetUsers()
         {
-            var users = _context.Users
+            var users = context.Users
                 .Select(u => new
                 {
                     u.Id,
@@ -36,7 +28,7 @@ namespace VC_SL.Controllers
         [HttpGet("GetUser")]
         public IActionResult GetUser(int id)
         {
-            var user = _context.Users.FirstOrDefault(x => x.Id == id);
+            var user = context.Users.FirstOrDefault(x => x.Id == id);
 
             if (user == null) {return NotFound();}
 
@@ -51,7 +43,7 @@ namespace VC_SL.Controllers
             if (string.IsNullOrEmpty(updateUserDto.UsernameHistory))
                 return BadRequest("Username history is empty");
 
-            var user = _context.Users.FirstOrDefault(x => x.Id == updateUserDto.Id);
+            var user = context.Users.FirstOrDefault(x => x.Id == updateUserDto.Id);
 
             if (user == null) {return NotFound($"User with ID {updateUserDto.Id} not found.");}
 
@@ -59,7 +51,7 @@ namespace VC_SL.Controllers
 
             user.UpdatedAt = DateTime.Now;
 
-            _context.SaveChanges();
+            context.SaveChanges();
 
             var historyList = UsernameHistoryService.DeserializeHistoryToList(user.UsernameHistory);
 
@@ -80,7 +72,7 @@ namespace VC_SL.Controllers
             createUserDto.CreatedAt = createUserDto.CreatedAt;
             createUserDto.UpdatedAt = createUserDto.UpdatedAt;
 
-            _context.SaveChanges();
+            context.SaveChanges();
 
             return Ok(createUserDto);
         }
