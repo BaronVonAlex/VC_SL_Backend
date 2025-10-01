@@ -37,3 +37,5 @@ obj/
 
 appsettings.Development.json
 appsettings.json
+
+appsettings.Local.json

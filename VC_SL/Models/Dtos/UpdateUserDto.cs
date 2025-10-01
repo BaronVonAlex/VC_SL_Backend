@@ -1,10 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace VC_SL.Models
+namespace VC_SL.Models.Dtos;
+
+public class UpdateUserDto
 {
-    public class UpdateUserDto
-    {
-        public int Id { get; set; }
-        public string UsernameHistory { get; set; } = null!;
-    }
+    [Required(ErrorMessage = "Username is required")]
+    [StringLength(100, MinimumLength = 1, ErrorMessage = "Username must be between 1 and 100 characters")]
+    public string UsernameHistory { get; set; } = null!;
 }

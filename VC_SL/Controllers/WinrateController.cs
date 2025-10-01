@@ -1,87 +1,52 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using VC_SL.Data;
-using VC_SL.Models;
-using VC_SL.Models.Entities;
+using VC_SL.Models.Dtos;
+using VC_SL.Services;
+using VC_SL.Exceptions;
 
-namespace VC_SL.Controllers
+namespace VC_SL.Controllers;
+
+[Route("api/[controller]")]
+[ApiController]
+public class WinrateController(IWinrateService winrateService) : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class WinrateController(ApplicationDbContext context) : ControllerBase
+    [HttpGet("GetWinrateForUser")]
+    [ProducesResponseType(typeof(List<WinrateDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetWinrateForUser(int userId, int? year = null)
     {
-        [HttpGet("GetWinrateForUser")]
-        public IActionResult GetWinrateForUser(int userId, int? year = null)
+        try
         {
-            var targetYear = year ?? DateTime.Now.Year;
-
-            var userExists = context.Users.Any(u => u.Id == userId);
-            if (!userExists)
-                return NotFound($"user {userId} not found");
-
-            var winratesQuery = context.Winrates
-                .Where(w => w.UserId == userId && w.Year == targetYear);
-
-            var winrates = winratesQuery
-                .OrderBy(w => w.Month)
-                .Select(w => new
-                {
-                    w.Month,
-                    w.Year,
-                    w.BaseAttackWinrate,
-                    w.BaseDefenceWinrate,
-                    w.FleetWinrate
-                })
-                .ToList();
-
+            var winrates = await winrateService.GetWinrateForUserAsync(userId, year);
             return Ok(winrates);
         }
-
-        [HttpPost("UpdateWinrate")]
-        public IActionResult UpdateWinrate([FromBody] UpdateWinrateDto updateWinrateDto)
+        catch (NotFoundException ex)
         {
-            var user = context.Users.FirstOrDefault(u => u.Id == updateWinrateDto.UserId);
+            return NotFound(new { error = ex.Message });
+        }
+    }
 
-            if (user == null)
-            {
-                user = new User
-                {
-                    Id = updateWinrateDto.UserId,
-                    UsernameHistory = "[]"
-                };
-                context.Users.Add(user);
-                context.SaveChanges();
-            }
+    [HttpPost("UpdateWinrate")]
+    [ProducesResponseType(typeof(WinrateDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateWinrate([FromBody] UpdateWinrateDto dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
 
-            var existingWinrate = context.Winrates
-                .FirstOrDefault(w =>
-                    w.UserId == updateWinrateDto.UserId &&
-                    w.Year == updateWinrateDto.Year &&
-                    w.Month == updateWinrateDto.Month);
-
-            if (existingWinrate != null)
-            {
-                existingWinrate.BaseAttackWinrate = updateWinrateDto.BaseAttackWinrate;
-                existingWinrate.BaseDefenceWinrate = updateWinrateDto.BaseDefenceWinrate;
-                existingWinrate.FleetWinrate = updateWinrateDto.FleetWinrate;
-            }
-            else
-            {
-                var newWinrate = new Winrate
-                {
-                    UserId = updateWinrateDto.UserId,
-                    Month = updateWinrateDto.Month,
-                    Year = updateWinrateDto.Year,
-                    BaseAttackWinrate = updateWinrateDto.BaseAttackWinrate,
-                    BaseDefenceWinrate = updateWinrateDto.BaseDefenceWinrate,
-                    FleetWinrate = updateWinrateDto.FleetWinrate
-                };
-
-                context.Winrates.Add(newWinrate);
-            }
-
-            context.SaveChanges();
-
-            return Ok(updateWinrateDto);
+        try
+        {
+            var result = await winrateService.UpsertWinrateAsync(dto);
+            return Ok(result);
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (ValidationException ex)
+        {
+            return BadRequest(new { errors = ex.Errors });
         }
     }
 }

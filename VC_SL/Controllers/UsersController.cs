@@ -1,81 +1,67 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using VC_SL.Data;
-using VC_SL.Models;
+using VC_SL.Models.Dtos;
 using VC_SL.Services;
+using VC_SL.Exceptions;
 
-namespace VC_SL.Controllers
+namespace VC_SL.Controllers;
+
+[Route("api/[controller]")]
+[ApiController]
+public class UsersController(IUserService userService) : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class UsersController(ApplicationDbContext context) : ControllerBase
+    [HttpGet("GetUser/{id}")]
+    [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetUser(int id)
     {
-        [HttpGet]
-        public IActionResult GetUsers()
+        try
         {
-            var users = context.Users
-                .Select(u => new
-                {
-                    u.Id,
-                    u.UsernameHistory,
-                    u.CreatedAt,
-                    u.UpdatedAt
-                })
-                .ToList();
-
-            return Ok(users);
-        }
-
-        [HttpGet("GetUser")]
-        public IActionResult GetUser(int id)
-        {
-            var user = context.Users.FirstOrDefault(x => x.Id == id);
-
-            if (user == null) {return NotFound();}
-
+            var user = await userService.GetUserByIdAsync(id);
             return Ok(user);
         }
-        [HttpPut("UpdateUser")]
-        public IActionResult UpdateUser([FromBody] UpdateUserDto updateUserDto)
+        catch (NotFoundException ex)
         {
-            if (updateUserDto == null)
-                return BadRequest("Invalid request");
-
-            if (string.IsNullOrEmpty(updateUserDto.UsernameHistory))
-                return BadRequest("Username history is empty");
-
-            var user = context.Users.FirstOrDefault(x => x.Id == updateUserDto.Id);
-
-            if (user == null) {return NotFound($"User with ID {updateUserDto.Id} not found.");}
-
-            user.UsernameHistory = UsernameHistoryService.AddUsername(user.UsernameHistory, updateUserDto.UsernameHistory);
-
-            user.UpdatedAt = DateTime.Now;
-
-            context.SaveChanges();
-
-            var historyList = UsernameHistoryService.DeserializeHistoryToList(user.UsernameHistory);
-
-            return Ok(new
-            {
-                user.Id,
-                historyList,
-                user.CreatedAt,
-                user.UpdatedAt
-            });
-        }
-
-        [HttpPost("CreateUser")]
-        public IActionResult CreateUser(CreateUserDto createUserDto)
-        {
-            createUserDto.Id = createUserDto.Id;
-            createUserDto.UsernameHistory = createUserDto.UsernameHistory;
-            createUserDto.CreatedAt = createUserDto.CreatedAt;
-            createUserDto.UpdatedAt = createUserDto.UpdatedAt;
-
-            context.SaveChanges();
-
-            return Ok(createUserDto);
+            return NotFound(new { error = ex.Message });
         }
     }
 
+    [HttpPost("CreateUser")]
+    [ProducesResponseType(typeof(UserDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> CreateUser([FromBody] CreateUserDto dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        try
+        {
+            var user = await userService.CreateUserAsync(dto);
+            return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
+        }
+        catch (ConflictException ex)
+        {
+            return Conflict(new { error = ex.Message });
+        }
+    }
+
+    [HttpPut("UpdateUser/{id}")]
+    [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserDto dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        try
+        {
+            var user = await userService.UpdateUserAsync(id, dto);
+            return Ok(user);
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+    }
 }
