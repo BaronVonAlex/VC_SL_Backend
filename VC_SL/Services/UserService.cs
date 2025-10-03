@@ -39,7 +39,6 @@ public class UserService(ApplicationDbContext context) : IUserService
 
     public async Task<UserDto> CreateUserAsync(CreateUserDto dto)
     {
-        // Check if user already exists
         var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Id == dto.Id);
         if (existingUser != null)
             throw new ConflictException($"User with ID {dto.Id} already exists");

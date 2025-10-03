@@ -1,6 +1,5 @@
 ﻿using VC_SL.Models.Entities;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
 
 namespace VC_SL.Data
 {

@@ -1,12 +1,6 @@
 ﻿namespace VC_SL.Exceptions;
 
-public class ValidationException : Exception
+public abstract class ValidationException(Dictionary<string, List<string>> errors) : Exception("Validation failed")
 {
-    public Dictionary<string, List<string>> Errors { get; }
-
-    public ValidationException(Dictionary<string, List<string>> errors)
-        : base("Validation failed")
-    {
-        Errors = errors;
-    }
+    public Dictionary<string, List<string>> Errors { get; } = errors;
 }
