@@ -23,16 +23,22 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IWinrateService, WinrateService>();
 
-var app = builder.Build();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowStaticWebApp", policy =>
+    {
+        policy.WithOrigins("https://purple-plant-051730d03.2.azurestaticapps.net")
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+});
 
-// if (app.Environment.IsDevelopment())
-// {
-//     app.UseSwagger();
-//     app.UseSwaggerUI();
-// }
+var app = builder.Build();
 
 app.UseSwagger();
 app.UseSwaggerUI();
+
+app.UseCors("AllowStaticWebApp");
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
