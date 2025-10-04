@@ -35,8 +35,32 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-app.UseSwagger();
-app.UseSwaggerUI();
+app.Use(async (context, next) =>
+{
+    if (app.Environment.IsDevelopment())
+    {
+        await next();
+        return;
+    }
+
+    var apiKey = context.Request.Headers["X-API-Key"].FirstOrDefault();
+    var expectedKey = app.Configuration["ApiKey"];
+
+    if (string.IsNullOrEmpty(apiKey) || apiKey != expectedKey)
+    {
+        context.Response.StatusCode = 403;
+        await context.Response.WriteAsync("Forbidden: Invalid API Key");
+        return;
+    }
+
+    await next();
+});
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 app.UseCors("AllowStaticWebApp");
 
