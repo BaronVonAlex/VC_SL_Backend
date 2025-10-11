@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 using VC_SL.Data;
 using VC_SL.Models.Entities;
 using VC_SL.Exceptions;
@@ -43,10 +44,14 @@ public class UserService(ApplicationDbContext context) : IUserService
         if (existingUser != null)
             throw new ConflictException($"User with ID {dto.Id} already exists");
 
+        var usernameHistoryJson = string.IsNullOrEmpty(dto.UsernameHistory)
+            ? "[]"
+            : JsonSerializer.Serialize(new List<string> { dto.UsernameHistory });
+
         var user = new User
         {
             Id = dto.Id,
-            UsernameHistory = dto.UsernameHistory ?? "[]",
+            UsernameHistory = usernameHistoryJson,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
