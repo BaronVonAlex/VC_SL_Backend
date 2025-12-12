@@ -26,16 +26,7 @@ public class WinrateService(ApplicationDbContext context) : IWinrateService
                 Year = w.Year,
                 BaseAttackWinrate = w.BaseAttackWinrate,
                 BaseDefenceWinrate = w.BaseDefenceWinrate,
-                FleetWinrate = w.FleetWinrate,
-                FleetWin = w.FleetWin,
-                FleetLoss = w.FleetLoss,
-                FleetDraw = w.FleetDraw,
-                BaseAttackWin = w.BaseAttackWin,
-                BaseAttackLoss = w.BaseAttackLoss,
-                BaseAttackDraw = w.BaseAttackDraw,
-                BaseDefenceWin = w.BaseDefenceWin,
-                BaseDefenceLoss = w.BaseDefenceLoss,
-                BaseDefenceDraw = w.BaseDefenceDraw
+                FleetWinrate = w.FleetWinrate
             })
             .ToListAsync();
 
@@ -59,15 +50,6 @@ public class WinrateService(ApplicationDbContext context) : IWinrateService
             existingWinrate.BaseAttackWinrate = dto.BaseAttackWinrate;
             existingWinrate.BaseDefenceWinrate = dto.BaseDefenceWinrate;
             existingWinrate.FleetWinrate = dto.FleetWinrate;
-            existingWinrate.FleetWin = dto.FleetWin;
-            existingWinrate.FleetLoss = dto.FleetLoss;
-            existingWinrate.FleetDraw = dto.FleetDraw;
-            existingWinrate.BaseAttackWin = dto.BaseAttackWin;
-            existingWinrate.BaseAttackLoss = dto.BaseAttackLoss;
-            existingWinrate.BaseAttackDraw = dto.BaseAttackDraw;
-            existingWinrate.BaseDefenceWin = dto.BaseDefenceWin;
-            existingWinrate.BaseDefenceLoss = dto.BaseDefenceLoss;
-            existingWinrate.BaseDefenceDraw = dto.BaseDefenceDraw;
         }
         else
         {
@@ -78,16 +60,7 @@ public class WinrateService(ApplicationDbContext context) : IWinrateService
                 Year = dto.Year,
                 BaseAttackWinrate = dto.BaseAttackWinrate,
                 BaseDefenceWinrate = dto.BaseDefenceWinrate,
-                FleetWinrate = dto.FleetWinrate,
-                FleetWin = dto.FleetWin,
-                FleetLoss = dto.FleetLoss,
-                FleetDraw = dto.FleetDraw,
-                BaseAttackWin = dto.BaseAttackWin,
-                BaseAttackLoss = dto.BaseAttackLoss,
-                BaseAttackDraw = dto.BaseAttackDraw,
-                BaseDefenceWin = dto.BaseDefenceWin,
-                BaseDefenceLoss = dto.BaseDefenceLoss,
-                BaseDefenceDraw = dto.BaseDefenceDraw
+                FleetWinrate = dto.FleetWinrate
             };
             context.Winrates.Add(existingWinrate);
         }
@@ -101,16 +74,7 @@ public class WinrateService(ApplicationDbContext context) : IWinrateService
             Year = existingWinrate.Year,
             BaseAttackWinrate = existingWinrate.BaseAttackWinrate,
             BaseDefenceWinrate = existingWinrate.BaseDefenceWinrate,
-            FleetWinrate = existingWinrate.FleetWinrate,
-            FleetWin = existingWinrate.FleetWin,
-            FleetLoss = existingWinrate.FleetLoss,
-            FleetDraw = existingWinrate.FleetDraw,
-            BaseAttackWin = existingWinrate.BaseAttackWin,
-            BaseAttackLoss = existingWinrate.BaseAttackLoss,
-            BaseAttackDraw = existingWinrate.BaseAttackDraw,
-            BaseDefenceWin = existingWinrate.BaseDefenceWin,
-            BaseDefenceLoss = existingWinrate.BaseDefenceLoss,
-            BaseDefenceDraw = existingWinrate.BaseDefenceDraw
+            FleetWinrate = existingWinrate.FleetWinrate
         };
     }
 }

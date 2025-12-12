@@ -45,10 +45,7 @@ namespace VC_SL.Migrations
                         .IsUnique()
                         .HasDatabaseName("RoleNameIndex");
 
-                    b.ToTable("AspNetRoles", null, t =>
-                        {
-                            t.ExcludeFromMigrations();
-                        });
+                    b.ToTable("AspNetRoles", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -73,10 +70,7 @@ namespace VC_SL.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("AspNetRoleClaims", null, t =>
-                        {
-                            t.ExcludeFromMigrations();
-                        });
+                    b.ToTable("AspNetRoleClaims", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
@@ -101,10 +95,7 @@ namespace VC_SL.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AspNetUserClaims", null, t =>
-                        {
-                            t.ExcludeFromMigrations();
-                        });
+                    b.ToTable("AspNetUserClaims", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
@@ -126,10 +117,7 @@ namespace VC_SL.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AspNetUserLogins", null, t =>
-                        {
-                            t.ExcludeFromMigrations();
-                        });
+                    b.ToTable("AspNetUserLogins", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
@@ -144,10 +132,7 @@ namespace VC_SL.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("AspNetUserRoles", null, t =>
-                        {
-                            t.ExcludeFromMigrations();
-                        });
+                    b.ToTable("AspNetUserRoles", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
@@ -166,10 +151,7 @@ namespace VC_SL.Migrations
 
                     b.HasKey("UserId", "LoginProvider", "Name");
 
-                    b.ToTable("AspNetUserTokens", null, t =>
-                        {
-                            t.ExcludeFromMigrations();
-                        });
+                    b.ToTable("AspNetUserTokens", (string)null);
                 });
 
             modelBuilder.Entity("VC_SL.Models.Entities.ApplicationUser", b =>
@@ -233,10 +215,7 @@ namespace VC_SL.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
 
-                    b.ToTable("AspNetUsers", null, t =>
-                        {
-                            t.ExcludeFromMigrations();
-                        });
+                    b.ToTable("AspNetUsers", (string)null);
                 });
 
             modelBuilder.Entity("VC_SL.Models.Entities.User", b =>
@@ -276,49 +255,13 @@ namespace VC_SL.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("BaseAttackDraw")
-                        .HasColumnType("int")
-                        .HasColumnName("baseAttackDraw");
-
-                    b.Property<int?>("BaseAttackLoss")
-                        .HasColumnType("int")
-                        .HasColumnName("baseAttackLoss");
-
-                    b.Property<int?>("BaseAttackWin")
-                        .HasColumnType("int")
-                        .HasColumnName("baseAttackWin");
-
                     b.Property<float?>("BaseAttackWinrate")
                         .HasColumnType("float")
                         .HasColumnName("baseAttackWinrate");
 
-                    b.Property<int?>("BaseDefenceDraw")
-                        .HasColumnType("int")
-                        .HasColumnName("baseDefenceDraw");
-
-                    b.Property<int?>("BaseDefenceLoss")
-                        .HasColumnType("int")
-                        .HasColumnName("baseDefenceLoss");
-
-                    b.Property<int?>("BaseDefenceWin")
-                        .HasColumnType("int")
-                        .HasColumnName("baseDefenceWin");
-
                     b.Property<float?>("BaseDefenceWinrate")
                         .HasColumnType("float")
                         .HasColumnName("baseDefenceWinrate");
-
-                    b.Property<int?>("FleetDraw")
-                        .HasColumnType("int")
-                        .HasColumnName("fleetDraw");
-
-                    b.Property<int?>("FleetLoss")
-                        .HasColumnType("int")
-                        .HasColumnName("fleetLoss");
-
-                    b.Property<int?>("FleetWin")
-                        .HasColumnType("int")
-                        .HasColumnName("fleetWin");
 
                     b.Property<float?>("FleetWinrate")
                         .HasColumnType("float")
@@ -341,7 +284,10 @@ namespace VC_SL.Migrations
                     b.HasIndex("UserId", "Year", "Month")
                         .IsUnique();
 
-                    b.ToTable("Winrates", (string)null);
+                    b.ToTable("Winrates", null, t =>
+                        {
+                            t.ExcludeFromMigrations();
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
