@@ -23,5 +23,32 @@ namespace VC_SL.Models.Entities
 
         [Column("fleetWinrate")]
         public float? FleetWinrate { get; set; }
+
+        [Column("baseAttackWin")]
+        public int? BaseAttackWin { get; set; }
+
+        [Column("baseAttackLoss")]
+        public int? BaseAttackLoss { get; set; }
+
+        [Column("baseAttackDraw")]
+        public int? BaseAttackDraw { get; set; }
+
+        [Column("baseDefenceWin")]
+        public int? BaseDefenceWin { get; set; }
+
+        [Column("baseDefenceLoss")]
+        public int? BaseDefenceLoss { get; set; }
+
+        [Column("baseDefenceDraw")]
+        public int? BaseDefenceDraw { get; set; }
+
+        [Column("fleetWin")]
+        public int? FleetWin { get; set; }
+
+        [Column("fleetLoss")]
+        public int? FleetLoss { get; set; }
+
+        [Column("fleetDraw")]
+        public int? FleetDraw { get; set; }
     }
 }

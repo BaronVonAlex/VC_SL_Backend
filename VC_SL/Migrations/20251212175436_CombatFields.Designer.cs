@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using VC_SL.Data;
 
@@ -11,9 +12,11 @@ using VC_SL.Data;
 namespace VC_SL.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251212175436_CombatFields")]
+    partial class CombatFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -45,7 +48,7 @@ namespace VC_SL.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users", null, t =>
+                    b.ToTable("User", null, t =>
                         {
                             t.ExcludeFromMigrations();
                         });
@@ -59,15 +62,15 @@ namespace VC_SL.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("BaseAttackDraw")
+                    b.Property<int>("BaseAttackDraw")
                         .HasColumnType("int")
                         .HasColumnName("baseAttackDraw");
 
-                    b.Property<int?>("BaseAttackLoss")
+                    b.Property<int>("BaseAttackLoss")
                         .HasColumnType("int")
                         .HasColumnName("baseAttackLoss");
 
-                    b.Property<int?>("BaseAttackWin")
+                    b.Property<int>("BaseAttackWin")
                         .HasColumnType("int")
                         .HasColumnName("baseAttackWin");
 
@@ -75,15 +78,15 @@ namespace VC_SL.Migrations
                         .HasColumnType("float")
                         .HasColumnName("baseAttackWinrate");
 
-                    b.Property<int?>("BaseDefenceDraw")
+                    b.Property<int>("BaseDefenceDraw")
                         .HasColumnType("int")
                         .HasColumnName("baseDefenceDraw");
 
-                    b.Property<int?>("BaseDefenceLoss")
+                    b.Property<int>("BaseDefenceLoss")
                         .HasColumnType("int")
                         .HasColumnName("baseDefenceLoss");
 
-                    b.Property<int?>("BaseDefenceWin")
+                    b.Property<int>("BaseDefenceWin")
                         .HasColumnType("int")
                         .HasColumnName("baseDefenceWin");
 
@@ -91,15 +94,15 @@ namespace VC_SL.Migrations
                         .HasColumnType("float")
                         .HasColumnName("baseDefenceWinrate");
 
-                    b.Property<int?>("FleetDraw")
+                    b.Property<int>("FleetDraw")
                         .HasColumnType("int")
                         .HasColumnName("fleetDraw");
 
-                    b.Property<int?>("FleetLoss")
+                    b.Property<int>("FleetLoss")
                         .HasColumnType("int")
                         .HasColumnName("fleetLoss");
 
-                    b.Property<int?>("FleetWin")
+                    b.Property<int>("FleetWin")
                         .HasColumnType("int")
                         .HasColumnName("fleetWin");
 

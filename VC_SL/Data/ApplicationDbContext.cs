@@ -12,6 +12,10 @@ namespace VC_SL.Data
         {
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<User>()
+                .ToTable("Users")
+                .Metadata.SetIsTableExcludedFromMigrations(true);
+
             modelBuilder.Entity<Winrate>()
                 .HasIndex(w => new { w.UserId, w.Year, w.Month })
                 .IsUnique();
