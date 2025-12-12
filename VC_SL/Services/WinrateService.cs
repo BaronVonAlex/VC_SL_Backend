@@ -24,18 +24,9 @@ public class WinrateService(ApplicationDbContext context) : IWinrateService
                 UserId = w.UserId,
                 Month = w.Month,
                 Year = w.Year,
-                BaseAttackWinrate = w.BaseAttackWinrate ?? 0,
-                BaseDefenceWinrate = w.BaseDefenceWinrate ?? 0,
-                FleetWinrate = w.FleetWinrate ?? 0,
-                FleetWin = w.FleetWin ?? 0,
-                FleetLoss = w.FleetLoss ?? 0,
-                FleetDraw = w.FleetDraw ?? 0,
-                BaseAttackWin = w.BaseAttackWin ?? 0,
-                BaseAttackLoss = w.BaseAttackLoss ?? 0,
-                BaseAttackDraw = w.BaseAttackDraw ?? 0,
-                BaseDefenceWin = w.BaseDefenceWin ?? 0,
-                BaseDefenceLoss = w.BaseDefenceLoss ?? 0,
-                BaseDefenceDraw = w.BaseDefenceDraw ?? 0
+                BaseAttackWinrate = w.BaseAttackWinrate,
+                BaseDefenceWinrate = w.BaseDefenceWinrate,
+                FleetWinrate = w.FleetWinrate
             })
             .ToListAsync();
 
@@ -59,15 +50,6 @@ public class WinrateService(ApplicationDbContext context) : IWinrateService
             existingWinrate.BaseAttackWinrate = dto.BaseAttackWinrate;
             existingWinrate.BaseDefenceWinrate = dto.BaseDefenceWinrate;
             existingWinrate.FleetWinrate = dto.FleetWinrate;
-            existingWinrate.FleetWin = dto.FleetWin ?? 0;
-            existingWinrate.FleetLoss = dto.FleetLoss ?? 0;
-            existingWinrate.FleetDraw = dto.FleetDraw ?? 0;
-            existingWinrate.BaseAttackWin = dto.BaseAttackWin ?? 0;
-            existingWinrate.BaseAttackLoss = dto.BaseAttackLoss ?? 0;
-            existingWinrate.BaseAttackDraw = dto.BaseAttackDraw ?? 0;
-            existingWinrate.BaseDefenceWin = dto.BaseDefenceWin ?? 0;
-            existingWinrate.BaseDefenceLoss = dto.BaseDefenceLoss ?? 0;
-            existingWinrate.BaseDefenceDraw = dto.BaseDefenceDraw ?? 0;
         }
         else
         {
@@ -76,18 +58,9 @@ public class WinrateService(ApplicationDbContext context) : IWinrateService
                 UserId = dto.UserId,
                 Month = dto.Month,
                 Year = dto.Year,
-                BaseAttackWinrate = dto.BaseAttackWinrate ?? 0,
-                BaseDefenceWinrate = dto.BaseDefenceWinrate ?? 0,
-                FleetWinrate = dto.FleetWinrate ?? 0,
-                FleetWin = dto.FleetWin ?? 0,
-                FleetLoss = dto.FleetLoss ?? 0,
-                FleetDraw = dto.FleetDraw ?? 0,
-                BaseAttackWin = dto.BaseAttackWin ?? 0,
-                BaseAttackLoss = dto.BaseAttackLoss ?? 0,
-                BaseAttackDraw = dto.BaseAttackDraw ?? 0,
-                BaseDefenceWin = dto.BaseDefenceWin ?? 0,
-                BaseDefenceLoss = dto.BaseDefenceLoss ?? 0,
-                BaseDefenceDraw = dto.BaseDefenceDraw ?? 0
+                BaseAttackWinrate = dto.BaseAttackWinrate,
+                BaseDefenceWinrate = dto.BaseDefenceWinrate,
+                FleetWinrate = dto.FleetWinrate
             };
             context.Winrates.Add(existingWinrate);
         }
@@ -101,16 +74,7 @@ public class WinrateService(ApplicationDbContext context) : IWinrateService
             Year = existingWinrate.Year,
             BaseAttackWinrate = existingWinrate.BaseAttackWinrate,
             BaseDefenceWinrate = existingWinrate.BaseDefenceWinrate,
-            FleetWinrate = existingWinrate.FleetWinrate,
-            FleetWin = existingWinrate.FleetWin,
-            FleetLoss = existingWinrate.FleetLoss,
-            FleetDraw = existingWinrate.FleetDraw,
-            BaseAttackWin = existingWinrate.BaseAttackWin,
-            BaseAttackLoss = existingWinrate.BaseAttackLoss,
-            BaseAttackDraw = existingWinrate.BaseAttackDraw,
-            BaseDefenceWin = existingWinrate.BaseDefenceWin,
-            BaseDefenceLoss = existingWinrate.BaseDefenceLoss,
-            BaseDefenceDraw = existingWinrate.BaseDefenceDraw
+            FleetWinrate = existingWinrate.FleetWinrate
         };
     }
 }
