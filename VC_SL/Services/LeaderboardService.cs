@@ -34,15 +34,13 @@ public class LeaderboardService(ApplicationDbContext context) : ILeaderboardServ
                 AvgBaseDefence = g.Average(w => w.BaseDefenceWinrate ?? 0),
                 AvgFleet = g.Average(w => w.FleetWinrate ?? 0),
                 CombinedWinrate = (g.Average(w => w.BaseAttackWinrate ?? 0) +
-                                  g.Average(w => w.BaseDefenceWinrate ?? 0) +
-                                  g.Average(w => w.FleetWinrate ?? 0)) / 3
+                                   g.Average(w => w.BaseDefenceWinrate ?? 0) +
+                                   g.Average(w => w.FleetWinrate ?? 0)) / 3
             })
             .ToListAsync();
 
         if (request.Period != LeaderboardPeriod.Monthly)
-        {
             userStats = userStats.Where(s => s.MonthsPlayed >= request.MinimumMonths).ToList();
-        }
 
         var userIds = userStats.Select(s => s.UserId).ToList();
         var users = await context.Users
@@ -50,31 +48,28 @@ public class LeaderboardService(ApplicationDbContext context) : ILeaderboardServ
             .ToDictionaryAsync(u => u.Id, u => u);
 
         var leaderboard = userStats.Select(s =>
-        {
-            var winrate = request.Category switch
             {
-                LeaderboardCategory.BaseAttack => s.AvgBaseAttack,
-                LeaderboardCategory.BaseDefence => s.AvgBaseDefence,
-                LeaderboardCategory.Fleet => s.AvgFleet,
-                _ => s.CombinedWinrate
-            };
+                var winrate = request.Category switch
+                {
+                    LeaderboardCategory.BaseAttack => s.AvgBaseAttack,
+                    LeaderboardCategory.BaseDefence => s.AvgBaseDefence,
+                    LeaderboardCategory.Fleet => s.AvgFleet,
+                    _ => s.CombinedWinrate
+                };
 
-            return new LeaderboardDto
-            {
-                UserId = s.UserId,
-                Username = GetLatestUsername(users.GetValueOrDefault(s.UserId)),
-                Winrate = (float)Math.Round(winrate, 2),
-                MonthsPlayed = s.MonthsPlayed
-            };
-        })
-        .OrderByDescending(l => l.Winrate)
-        .Take(request.Limit)
-        .ToList();
+                return new LeaderboardDto
+                {
+                    UserId = s.UserId,
+                    Username = GetLatestUsername(users.GetValueOrDefault(s.UserId)),
+                    Winrate = (float)Math.Round(winrate, 2),
+                    MonthsPlayed = s.MonthsPlayed
+                };
+            })
+            .OrderByDescending(l => l.Winrate)
+            .Take(request.Limit)
+            .ToList();
 
-        for (var i = 0; i < leaderboard.Count; i++)
-        {
-            leaderboard[i].Rank = i + 1;
-        }
+        for (var i = 0; i < leaderboard.Count; i++) leaderboard[i].Rank = i + 1;
 
         return leaderboard;
     }
@@ -101,19 +96,11 @@ public class LeaderboardService(ApplicationDbContext context) : ILeaderboardServ
         }
 
         if (request is { Period: LeaderboardPeriod.Yearly, Year: null })
-        {
             errors.Add("Year", ["Year is required for yearly leaderboard"]);
-        }
 
-        if (request.Limit is < 1 or > 1000)
-        {
-            errors.Add("Limit", ["Limit must be between 1 and 1000"]);
-        }
+        if (request.Limit is < 1 or > 1000) errors.Add("Limit", ["Limit must be between 1 and 1000"]);
 
-        if (errors.Count != 0)
-        {
-            throw new LeaderboardValidationException(errors);
-        }
+        if (errors.Count != 0) throw new LeaderboardValidationException(errors);
     }
 
     private static string GetLatestUsername(Models.Entities.User? user)
