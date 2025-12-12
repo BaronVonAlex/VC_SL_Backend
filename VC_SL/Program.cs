@@ -8,6 +8,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddCors();
+
 builder.Configuration
     .SetBasePath(Directory.GetCurrentDirectory())
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
@@ -24,15 +26,15 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IWinrateService, WinrateService>();
 builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowStaticWebApp", policy =>
-    {
-        policy.WithOrigins("https://purple-plant-051730d03.2.azurestaticapps.net")
-            .AllowAnyMethod()
-            .AllowAnyHeader();
-    });
-});
+// builder.Services.AddCors(options =>
+// {
+//     options.AddPolicy("AllowStaticWebApp", policy =>
+//     {
+//         policy.WithOrigins("https://purple-plant-051730d03.2.azurestaticapps.net")
+//             .AllowAnyMethod()
+//             .AllowAnyHeader();
+//     });
+// });
 
 var app = builder.Build();
 
@@ -63,7 +65,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors("AllowStaticWebApp");
+app.UseCors(builder =>
+{
+    builder.WithOrigins("https://vcsl.online").AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+});
+
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
