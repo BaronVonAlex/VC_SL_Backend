@@ -25,9 +25,7 @@ public static class UsernameHistoryService
     }
 
     public static List<string> DeserializeHistoryToList(string historyJson)
-    {
-        return ParseHistory(historyJson);
-    }
+        => ParseHistory(historyJson);
 
     private static List<string> ParseHistory(string historyJson)
     {
@@ -35,9 +33,9 @@ public static class UsernameHistoryService
             return [];
 
         return TryDeserialize<List<string>>(historyJson)
-               ?? (TryDeserialize<string>(historyJson) is string single && !string.IsNullOrEmpty(single)
-                   ? [single]
-                   : []);
+            ?? (TryDeserialize<string>(historyJson) is string single && !string.IsNullOrEmpty(single)
+                ? [single]
+                : []);
     }
 
     private static List<string> ParseNewUsername(string newUsername)
@@ -48,10 +46,12 @@ public static class UsernameHistoryService
         var trimmed = newUsername.Trim();
 
         if (IsJsonLike(trimmed))
+        {
             return TryDeserialize<List<string>>(newUsername)
-                   ?? (TryDeserialize<string>(newUsername) is string single && !string.IsNullOrEmpty(single)
-                       ? [single]
-                       : [GetCleanedValue(trimmed)]);
+                ?? (TryDeserialize<string>(newUsername) is string single && !string.IsNullOrEmpty(single)
+                    ? [single]
+                    : [GetCleanedValue(trimmed)]);
+        }
 
         return [newUsername];
     }
@@ -69,13 +69,9 @@ public static class UsernameHistoryService
     }
 
     private static bool IsJsonLike(string value)
-    {
-        return (value.StartsWith('[') && value.EndsWith(']')) ||
-               (value.StartsWith('"') && value.EndsWith('"'));
-    }
+        => (value.StartsWith('[') && value.EndsWith(']')) ||
+           (value.StartsWith('"') && value.EndsWith('"'));
 
     private static string GetCleanedValue(string value)
-    {
-        return value.Trim('"', '[', ']');
-    }
+        => value.Trim('"', '[', ']');
 }

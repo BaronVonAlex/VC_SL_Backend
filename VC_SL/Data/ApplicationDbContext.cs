@@ -1,29 +1,20 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using VC_SL.Models.Entities;
+﻿using VC_SL.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace VC_SL.Data;
-
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-    : IdentityDbContext<ApplicationUser>(options)
+namespace VC_SL.Data
 {
-    public DbSet<User> Users { get; set; }
-    public DbSet<Winrate> Winrates { get; set; }
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
     {
-        base.OnModelCreating(modelBuilder);
+        public DbSet<User> Users { get; set; }
+        public DbSet<Winrate> Winrates { get; set; }
 
-        modelBuilder.Entity<User>()
-            .ToTable("Users")
-            .Metadata.SetIsTableExcludedFromMigrations(true);
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<Winrate>()
-            .ToTable("Winrates")
-            .Metadata.SetIsTableExcludedFromMigrations(true);
-
-        modelBuilder.Entity<Winrate>()
-            .HasIndex(w => new { w.UserId, w.Year, w.Month })
-            .IsUnique();
+            modelBuilder.Entity<Winrate>()
+                .HasIndex(w => new { w.UserId, w.Year, w.Month })
+                .IsUnique();
+        }
     }
 }
