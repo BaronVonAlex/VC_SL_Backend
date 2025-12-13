@@ -1,4 +1,7 @@
+using Azure.Extensions.AspNetCore.Configuration.Secrets;
 using Microsoft.EntityFrameworkCore;
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
 using VC_SL.Data;
 using VC_SL.Services;
 
@@ -11,32 +14,45 @@ builder.Services.AddSwaggerGen();
 builder.Configuration
     .SetBasePath(Directory.GetCurrentDirectory())
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
     .AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true)
     .AddEnvironmentVariables();
 
+if (!builder.Environment.IsDevelopment())
+{
+    var keyVaultUrl = builder.Configuration["KeyVault:Url"];
+    if (!string.IsNullOrEmpty(keyVaultUrl))
+    {
+        var secretClient = new SecretClient(new Uri(keyVaultUrl), new DefaultAzureCredential());
+        builder.Configuration.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
+    }
+}
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(
-
         builder.Configuration.GetConnectionString("VcSlDbConnectionString"),
-
         new MySqlServerVersion(new Version(8, 0, 36))
     ));
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IWinrateService, WinrateService>();
 builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
+builder.Services.AddScoped<IHmacService, HmacService>();
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowStaticWebApp", policy =>
     {
-        policy.WithOrigins("https://vcsl.online")
+        policy
+            .WithOrigins("https://vcsl.online")
             .AllowAnyMethod()
             .AllowAnyHeader();
     });
 });
 
 var app = builder.Build();
+
+app.UseCors("AllowStaticWebApp");
 
 app.Use(async (context, next) =>
 {
@@ -49,7 +65,7 @@ app.Use(async (context, next) =>
     var apiKey = context.Request.Headers["X-API-Key"].FirstOrDefault();
     var expectedKey = app.Configuration["ApiKey"];
 
-    if (string.IsNullOrEmpty(apiKey) || apiKey != expectedKey)
+    if (!string.IsNullOrEmpty(expectedKey) && (string.IsNullOrEmpty(apiKey) || apiKey != expectedKey))
     {
         context.Response.StatusCode = 403;
         await context.Response.WriteAsync("Forbidden");
@@ -59,13 +75,13 @@ app.Use(async (context, next) =>
     await next();
 });
 
+app.UseMiddleware<HmacValidationMiddleware>();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-app.UseCors("AllowStaticWebApp");
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
