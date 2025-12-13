@@ -7,13 +7,6 @@ using VC_SL.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var keyVaultUrl = builder.Configuration["KeyVault:Url"];
-if (!string.IsNullOrEmpty(keyVaultUrl))
-{
-    var secretClient = new SecretClient(new Uri(keyVaultUrl), new DefaultAzureCredential());
-    builder.Configuration.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
-}
-
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -21,8 +14,19 @@ builder.Services.AddSwaggerGen();
 builder.Configuration
     .SetBasePath(Directory.GetCurrentDirectory())
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
     .AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true)
     .AddEnvironmentVariables();
+
+if (!builder.Environment.IsDevelopment())
+{
+    var keyVaultUrl = builder.Configuration["KeyVault:Url"];
+    if (!string.IsNullOrEmpty(keyVaultUrl))
+    {
+        var secretClient = new SecretClient(new Uri(keyVaultUrl), new DefaultAzureCredential());
+        builder.Configuration.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
+    }
+}
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(

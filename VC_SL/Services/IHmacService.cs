@@ -35,7 +35,7 @@ public class HmacService(IConfiguration config) : IHmacService
 
             return match;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return false;
         }
