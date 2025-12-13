@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -7,49 +6,52 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace VC_SL.Migrations
 {
     /// <inheritdoc />
-    public partial class Baseline : Migration
+    public partial class InitialCreate_AzureSql : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterDatabase()
-                .Annotation("MySql:CharSet", "utf8mb4");
-
             migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    username_history = table.Column<string>(type: "longtext", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    createdAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    updatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    username_history = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    createdAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    updatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Users", x => x.Id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "Winrates",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     userId = table.Column<int>(type: "int", nullable: false),
                     month = table.Column<int>(type: "int", nullable: false),
                     year = table.Column<int>(type: "int", nullable: false),
-                    baseAttackWinrate = table.Column<float>(type: "float", nullable: true),
-                    baseDefenceWinrate = table.Column<float>(type: "float", nullable: true),
-                    fleetWinrate = table.Column<float>(type: "float", nullable: true)
+                    baseAttackWinrate = table.Column<float>(type: "real", nullable: true),
+                    baseDefenceWinrate = table.Column<float>(type: "real", nullable: true),
+                    fleetWinrate = table.Column<float>(type: "real", nullable: true),
+                    baseAttackWin = table.Column<int>(type: "int", nullable: true),
+                    baseAttackLoss = table.Column<int>(type: "int", nullable: true),
+                    baseAttackDraw = table.Column<int>(type: "int", nullable: true),
+                    baseDefenceWin = table.Column<int>(type: "int", nullable: true),
+                    baseDefenceLoss = table.Column<int>(type: "int", nullable: true),
+                    baseDefenceDraw = table.Column<int>(type: "int", nullable: true),
+                    fleetWin = table.Column<int>(type: "int", nullable: true),
+                    fleetLoss = table.Column<int>(type: "int", nullable: true),
+                    fleetDraw = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Winrates", x => x.Id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Winrates_userId_year_month",

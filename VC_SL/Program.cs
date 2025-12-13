@@ -15,9 +15,12 @@ builder.Configuration
     .AddEnvironmentVariables();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseMySql(
-        builder.Configuration.GetConnectionString("VcSlDbConnectionString"),
-        new MySqlServerVersion(new Version(8, 0, 36))
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("VcSlAzureSqlConnection"),
+        sql =>
+        {
+            sql.EnableRetryOnFailure();
+        }
     ));
 
 builder.Services.AddScoped<IUserService, UserService>();
@@ -28,34 +31,13 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowStaticWebApp", policy =>
     {
-        policy.WithOrigins("https://purple-plant-051730d03.2.azurestaticapps.net")
+        policy.WithOrigins("https://vcsl.online")
             .AllowAnyMethod()
             .AllowAnyHeader();
     });
 });
 
 var app = builder.Build();
-
-app.Use(async (context, next) =>
-{
-    if (app.Environment.IsDevelopment())
-    {
-        await next();
-        return;
-    }
-
-    var apiKey = context.Request.Headers["X-API-Key"].FirstOrDefault();
-    var expectedKey = app.Configuration["ApiKey"];
-
-    if (string.IsNullOrEmpty(apiKey) || apiKey != expectedKey)
-    {
-        context.Response.StatusCode = 403;
-        await context.Response.WriteAsync("Forbidden: Invalid API Key");
-        return;
-    }
-
-    await next();
-});
 
 if (app.Environment.IsDevelopment())
 {

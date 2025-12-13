@@ -12,8 +12,8 @@ using VC_SL.Data;
 namespace VC_SL.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251212130128_Baseline")]
-    partial class Baseline
+    [Migration("20251213113441_InitialCreate_AzureSql")]
+    partial class InitialCreate_AzureSql
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -21,9 +21,9 @@ namespace VC_SL.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "9.0.8")
-                .HasAnnotation("Relational:MaxIdentifierLength", 64);
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-            MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("VC_SL.Models.Entities.User", b =>
                 {
@@ -31,24 +31,24 @@ namespace VC_SL.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)")
+                        .HasColumnType("datetime2")
                         .HasColumnName("createdAt");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime(6)")
+                        .HasColumnType("datetime2")
                         .HasColumnName("updatedAt");
 
                     b.Property<string>("UsernameHistory")
                         .IsRequired()
-                        .HasColumnType("longtext")
+                        .HasColumnType("nvarchar(max)")
                         .HasColumnName("username_history");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("VC_SL.Models.Entities.Winrate", b =>
@@ -57,18 +57,54 @@ namespace VC_SL.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("BaseAttackDraw")
+                        .HasColumnType("int")
+                        .HasColumnName("baseAttackDraw");
+
+                    b.Property<int?>("BaseAttackLoss")
+                        .HasColumnType("int")
+                        .HasColumnName("baseAttackLoss");
+
+                    b.Property<int?>("BaseAttackWin")
+                        .HasColumnType("int")
+                        .HasColumnName("baseAttackWin");
 
                     b.Property<float?>("BaseAttackWinrate")
-                        .HasColumnType("float")
+                        .HasColumnType("real")
                         .HasColumnName("baseAttackWinrate");
 
+                    b.Property<int?>("BaseDefenceDraw")
+                        .HasColumnType("int")
+                        .HasColumnName("baseDefenceDraw");
+
+                    b.Property<int?>("BaseDefenceLoss")
+                        .HasColumnType("int")
+                        .HasColumnName("baseDefenceLoss");
+
+                    b.Property<int?>("BaseDefenceWin")
+                        .HasColumnType("int")
+                        .HasColumnName("baseDefenceWin");
+
                     b.Property<float?>("BaseDefenceWinrate")
-                        .HasColumnType("float")
+                        .HasColumnType("real")
                         .HasColumnName("baseDefenceWinrate");
 
+                    b.Property<int?>("FleetDraw")
+                        .HasColumnType("int")
+                        .HasColumnName("fleetDraw");
+
+                    b.Property<int?>("FleetLoss")
+                        .HasColumnType("int")
+                        .HasColumnName("fleetLoss");
+
+                    b.Property<int?>("FleetWin")
+                        .HasColumnType("int")
+                        .HasColumnName("fleetWin");
+
                     b.Property<float?>("FleetWinrate")
-                        .HasColumnType("float")
+                        .HasColumnType("real")
                         .HasColumnName("fleetWinrate");
 
                     b.Property<int>("Month")
