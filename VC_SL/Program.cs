@@ -15,12 +15,11 @@ builder.Configuration
     .AddEnvironmentVariables();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("VcSlAzureSqlConnection"),
-        sql =>
-        {
-            sql.EnableRetryOnFailure();
-        }
+    options.UseMySql(
+
+        builder.Configuration.GetConnectionString("VcSlDbConnectionString"),
+
+        new MySqlServerVersion(new Version(8, 0, 36))
     ));
 
 builder.Services.AddScoped<IUserService, UserService>();
