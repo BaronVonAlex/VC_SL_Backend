@@ -18,15 +18,27 @@ builder.Configuration
     .AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true)
     .AddEnvironmentVariables();
 
+// TEMPORARILY DISABLED - Key Vault connection was causing startup failure
+// Uncomment and configure when you're ready to use Key Vault
+/*
 if (!builder.Environment.IsDevelopment())
 {
     var keyVaultUrl = builder.Configuration["KeyVault:Url"];
     if (!string.IsNullOrEmpty(keyVaultUrl))
     {
-        var secretClient = new SecretClient(new Uri(keyVaultUrl), new DefaultAzureCredential());
-        builder.Configuration.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
+        try
+        {
+            var secretClient = new SecretClient(new Uri(keyVaultUrl), new DefaultAzureCredential());
+            builder.Configuration.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
+        }
+        catch (Exception ex)
+        {
+            // Log the error but continue - fallback to environment variables
+            Console.WriteLine($"Warning: Failed to load Key Vault secrets: {ex.Message}");
+        }
     }
 }
+*/
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(
