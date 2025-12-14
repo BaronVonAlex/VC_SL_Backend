@@ -65,7 +65,9 @@ app.Use(async (context, next) =>
     var apiKey = context.Request.Headers["X-API-Key"].FirstOrDefault();
     var expectedKey = app.Configuration["ApiKey"];
 
-    if (!string.IsNullOrEmpty(expectedKey) && (string.IsNullOrEmpty(apiKey) || apiKey != expectedKey))
+    if (string.IsNullOrEmpty(expectedKey) ||
+        string.IsNullOrEmpty(apiKey) ||
+        apiKey != expectedKey)
     {
         context.Response.StatusCode = 403;
         await context.Response.WriteAsync("Forbidden");
