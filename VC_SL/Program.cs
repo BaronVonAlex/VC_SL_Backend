@@ -51,10 +51,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowStaticWebApp", policy =>
     {
         policy
-            .WithOrigins(
-                "https://vcsl.online",
-                "http://localhost:3000"
-            )
+            .WithOrigins("https://vcsl.online")
             .AllowAnyMethod()
             .AllowAnyHeader();
     });
@@ -65,32 +62,6 @@ var app = builder.Build();
 app.UseCors("AllowStaticWebApp");
 
 app.UseMiddleware<HmacValidationMiddleware>();
-
-app.Use(async (context, next) =>
-{
-    if (app.Environment.IsDevelopment())
-    {
-        await next();
-        return;
-    }
-
-    if (context.Request.Method == "GET")
-    {
-        var apiKey = context.Request.Headers["X-API-Key"].FirstOrDefault();
-        var expectedKey = app.Configuration["ApiKey"];
-
-        if (string.IsNullOrEmpty(expectedKey) ||
-            string.IsNullOrEmpty(apiKey) ||
-            apiKey != expectedKey)
-        {
-            context.Response.StatusCode = 403;
-            await context.Response.WriteAsync("Forbidden");
-            return;
-        }
-    }
-
-    await next();
-});
 
 if (app.Environment.IsDevelopment())
 {
