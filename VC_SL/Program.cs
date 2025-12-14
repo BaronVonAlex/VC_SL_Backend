@@ -18,12 +18,9 @@ builder.Configuration
     .AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true)
     .AddEnvironmentVariables();
 
-// TEMPORARILY DISABLED - Key Vault connection was causing startup failure
-// Uncomment and configure when you're ready to use Key Vault
-/*
 if (!builder.Environment.IsDevelopment())
 {
-    var keyVaultUrl = builder.Configuration["KeyVault:Url"];
+    var keyVaultUrl = builder.Configuration["KeyVaultUrl"];
     if (!string.IsNullOrEmpty(keyVaultUrl))
     {
         try
@@ -33,12 +30,10 @@ if (!builder.Environment.IsDevelopment())
         }
         catch (Exception ex)
         {
-            // Log the error but continue - fallback to environment variables
-            Console.WriteLine($"Warning: Failed to load Key Vault secrets: {ex.Message}");
+            Console.WriteLine($"Warning: Failed to load Key Vault: {ex.Message}");
         }
     }
 }
-*/
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(
