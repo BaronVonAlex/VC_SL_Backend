@@ -5,8 +5,12 @@ using VC_SL.Exceptions;
 
 namespace VC_SL.Services;
 
-public class LeaderboardService(ApplicationDbContext context) : ILeaderboardService
+public class LeaderboardService(ApplicationDbContext context, IConfiguration config) : ILeaderboardService
 {
+    /// C = the number of months we assume before trusting a player's winrate.
+    /// Higher = more conservative (new players dragged toward average longer).
+    private float BayesianC => config.GetValue<float>("Leaderboard:BayesianC", 3f);
+
     public async Task<List<LeaderboardDto>> GetLeaderboardAsync(LeaderboardRequestDto request)
     {
         ValidateRequest(request);
@@ -16,7 +20,7 @@ public class LeaderboardService(ApplicationDbContext context) : ILeaderboardServ
         query = request.Period switch
         {
             LeaderboardPeriod.Monthly => query.Where(w => w.Month == request.Month && w.Year == request.Year),
-            LeaderboardPeriod.Yearly => query.Where(w => w.Year == request.Year),
+            LeaderboardPeriod.Yearly  => query.Where(w => w.Year == request.Year),
             LeaderboardPeriod.AllTime => query,
             _ => throw new LeaderboardValidationException(new Dictionary<string, List<string>>
             {
@@ -30,12 +34,12 @@ public class LeaderboardService(ApplicationDbContext context) : ILeaderboardServ
             {
                 UserId = g.Key,
                 MonthsPlayed = g.Count(),
-                AvgBaseAttack = g.Average(w => w.BaseAttackWinrate ?? 0),
-                AvgBaseDefence = g.Average(w => w.BaseDefenceWinrate ?? 0),
-                AvgFleet = g.Average(w => w.FleetWinrate ?? 0),
-                CombinedWinrate = (g.Average(w => w.BaseAttackWinrate ?? 0) +
-                                  g.Average(w => w.BaseDefenceWinrate ?? 0) +
-                                  g.Average(w => w.FleetWinrate ?? 0)) / 3
+                AvgBaseAttack   = g.Average(w => w.BaseAttackWinrate   ?? 0f),
+                AvgBaseDefence  = g.Average(w => w.BaseDefenceWinrate  ?? 0f),
+                AvgFleet        = g.Average(w => w.FleetWinrate        ?? 0f),
+                CombinedWinrate = (g.Average(w => w.BaseAttackWinrate  ?? 0f) +
+                                   g.Average(w => w.BaseDefenceWinrate ?? 0f) +
+                                   g.Average(w => w.FleetWinrate       ?? 0f)) / 3f
             })
             .ToListAsync();
 
@@ -44,6 +48,19 @@ public class LeaderboardService(ApplicationDbContext context) : ILeaderboardServ
             userStats = userStats.Where(s => s.MonthsPlayed >= request.MinimumMonths).ToList();
         }
 
+        if (userStats.Count == 0)
+            return [];
+
+        var globalAvg = (float)(request.Category switch
+        {
+            LeaderboardCategory.BaseAttack  => userStats.Average(s => s.AvgBaseAttack),
+            LeaderboardCategory.BaseDefence => userStats.Average(s => s.AvgBaseDefence),
+            LeaderboardCategory.Fleet       => userStats.Average(s => s.AvgFleet),
+            _                               => userStats.Average(s => s.CombinedWinrate)
+        });
+
+        var c = BayesianC;
+
         var userIds = userStats.Select(s => s.UserId).ToList();
         var users = await context.Users
             .Where(u => userIds.Contains(u.Id))
@@ -51,20 +68,23 @@ public class LeaderboardService(ApplicationDbContext context) : ILeaderboardServ
 
         var leaderboard = userStats.Select(s =>
         {
-            var winrate = request.Category switch
+            var rawWinrate = request.Category switch
             {
-                LeaderboardCategory.BaseAttack => s.AvgBaseAttack,
+                LeaderboardCategory.BaseAttack  => s.AvgBaseAttack,
                 LeaderboardCategory.BaseDefence => s.AvgBaseDefence,
-                LeaderboardCategory.Fleet => s.AvgFleet,
-                _ => s.CombinedWinrate
+                LeaderboardCategory.Fleet       => s.AvgFleet,
+                _                               => s.CombinedWinrate
             };
+
+            var adjustedWinrate = (c * globalAvg + s.MonthsPlayed * rawWinrate) / (c + s.MonthsPlayed);
 
             return new LeaderboardDto
             {
-                UserId = s.UserId,
-                Username = GetLatestUsername(users.GetValueOrDefault(s.UserId)),
-                Winrate = (float)Math.Round(winrate, 2),
-                MonthsPlayed = s.MonthsPlayed
+                UserId        = s.UserId,
+                Username      = GetLatestUsername(users.GetValueOrDefault(s.UserId)),
+                Winrate       = (float)Math.Round(adjustedWinrate, 2),
+                RawWinrate    = (float)Math.Round(rawWinrate, 2),
+                MonthsPlayed  = s.MonthsPlayed
             };
         })
         .OrderByDescending(l => l.Winrate)
@@ -72,9 +92,7 @@ public class LeaderboardService(ApplicationDbContext context) : ILeaderboardServ
         .ToList();
 
         for (var i = 0; i < leaderboard.Count; i++)
-        {
             leaderboard[i].Rank = i + 1;
-        }
 
         return leaderboard;
     }
@@ -101,25 +119,18 @@ public class LeaderboardService(ApplicationDbContext context) : ILeaderboardServ
         }
 
         if (request is { Period: LeaderboardPeriod.Yearly, Year: null })
-        {
             errors.Add("Year", ["Year is required for yearly leaderboard"]);
-        }
 
         if (request.Limit is < 1 or > 1000)
-        {
             errors.Add("Limit", ["Limit must be between 1 and 1000"]);
-        }
 
         if (errors.Count != 0)
-        {
             throw new LeaderboardValidationException(errors);
-        }
     }
 
     private static string GetLatestUsername(Models.Entities.User? user)
     {
         if (user == null) return "Unknown";
-
         var history = UsernameHistoryService.DeserializeHistoryToList(user.UsernameHistory);
         return history.LastOrDefault() ?? "Unknown";
     }

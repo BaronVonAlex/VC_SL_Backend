@@ -6,6 +6,7 @@ public class LeaderboardDto
     public int UserId { get; set; }
     public string Username { get; set; } = string.Empty;
     public float Winrate { get; set; }
+    public float RawWinrate { get; set; }
     public int MonthsPlayed { get; set; }
 }
 
