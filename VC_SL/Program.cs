@@ -52,6 +52,7 @@ builder.Services.AddCors(options =>
     {
         policy
             .WithOrigins("https://vcsl.online")
+            .WithOrigins("http://localhost:5174")
             .AllowAnyMethod()
             .AllowAnyHeader();
     });

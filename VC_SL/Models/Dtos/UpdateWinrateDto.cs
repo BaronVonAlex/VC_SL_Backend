@@ -24,4 +24,31 @@ public class UpdateWinrateDto
 
     [Range(0, 100, ErrorMessage = "Winrate must be between 0 and 100")]
     public float? FleetWinrate { get; set; }
+
+    [Range(0, int.MaxValue)]
+    public int? BaseAttackWin { get; set; }
+
+    [Range(0, int.MaxValue)]
+    public int? BaseAttackLoss { get; set; }
+
+    [Range(0, int.MaxValue)]
+    public int? BaseAttackDraw { get; set; }
+
+    [Range(0, int.MaxValue)]
+    public int? BaseDefenceWin { get; set; }
+
+    [Range(0, int.MaxValue)]
+    public int? BaseDefenceLoss { get; set; }
+
+    [Range(0, int.MaxValue)]
+    public int? BaseDefenceDraw { get; set; }
+
+    [Range(0, int.MaxValue)]
+    public int? FleetWin { get; set; }
+
+    [Range(0, int.MaxValue)]
+    public int? FleetLoss { get; set; }
+
+    [Range(0, int.MaxValue)]
+    public int? FleetDraw { get; set; }
 }

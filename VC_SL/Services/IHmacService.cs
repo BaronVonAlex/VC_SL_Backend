@@ -58,7 +58,6 @@ public class HmacValidationMiddleware(RequestDelegate next)
             return;
         }
 
-
         context.Request.EnableBuffering();
         using var reader = new StreamReader(context.Request.Body);
         var body = await reader.ReadToEndAsync();

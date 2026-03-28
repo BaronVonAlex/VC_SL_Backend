@@ -49,4 +49,5 @@ public class WinrateController(IWinrateService winrateService) : ControllerBase
             return BadRequest(new { errors = ex.Errors });
         }
     }
+
 }
