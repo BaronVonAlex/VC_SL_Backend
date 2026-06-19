@@ -1,34 +1,31 @@
-﻿using Microsoft.EntityFrameworkCore;
-using VC_SL.Data;
+﻿using VC_SL.Data;
 using VC_SL.Models.Dtos;
 using VC_SL.Exceptions;
 
 namespace VC_SL.Services;
 
-public class LeaderboardService(ApplicationDbContext context, IConfiguration config) : ILeaderboardService
+public class LeaderboardService(JsonDataStore store, IConfiguration config) : ILeaderboardService
 {
-    /// C = the number of months we assume before trusting a player's winrate.
-    /// Higher = more conservative (new players dragged toward average longer).
     private float BayesianC => config.GetValue<float>("Leaderboard:BayesianC", 3f);
 
-    public async Task<List<LeaderboardDto>> GetLeaderboardAsync(LeaderboardRequestDto request)
+    public Task<List<LeaderboardDto>> GetLeaderboardAsync(LeaderboardRequestDto request)
     {
         ValidateRequest(request);
 
-        var query = context.Winrates.AsQueryable();
+        IEnumerable<Models.Entities.Winrate> winrates = store.GetWinrates();
 
-        query = request.Period switch
+        winrates = request.Period switch
         {
-            LeaderboardPeriod.Monthly => query.Where(w => w.Month == request.Month && w.Year == request.Year),
-            LeaderboardPeriod.Yearly  => query.Where(w => w.Year == request.Year),
-            LeaderboardPeriod.AllTime => query,
+            LeaderboardPeriod.Monthly => winrates.Where(w => w.Month == request.Month && w.Year == request.Year),
+            LeaderboardPeriod.Yearly  => winrates.Where(w => w.Year == request.Year),
+            LeaderboardPeriod.AllTime => winrates,
             _ => throw new LeaderboardValidationException(new Dictionary<string, List<string>>
             {
                 { "Period", ["Invalid period specified"] }
             })
         };
 
-        var userStats = await query
+        var userStats = winrates
             .GroupBy(w => w.UserId)
             .Select(g => new
             {
@@ -41,7 +38,7 @@ public class LeaderboardService(ApplicationDbContext context, IConfiguration con
                                    g.Average(w => w.BaseDefenceWinrate ?? 0f) +
                                    g.Average(w => w.FleetWinrate       ?? 0f)) / 3f
             })
-            .ToListAsync();
+            .ToList();
 
         if (request.Period != LeaderboardPeriod.Monthly)
         {
@@ -49,7 +46,7 @@ public class LeaderboardService(ApplicationDbContext context, IConfiguration con
         }
 
         if (userStats.Count == 0)
-            return [];
+            return Task.FromResult(new List<LeaderboardDto>());
 
         var globalAvg = (float)(request.Category switch
         {
@@ -61,10 +58,10 @@ public class LeaderboardService(ApplicationDbContext context, IConfiguration con
 
         var c = BayesianC;
 
-        var userIds = userStats.Select(s => s.UserId).ToList();
-        var users = await context.Users
+        var userIds = userStats.Select(s => s.UserId).ToHashSet();
+        var users = store.GetUsers()
             .Where(u => userIds.Contains(u.Id))
-            .ToDictionaryAsync(u => u.Id, u => u);
+            .ToDictionary(u => u.Id, u => u);
 
         var leaderboard = userStats.Select(s =>
         {
@@ -94,7 +91,7 @@ public class LeaderboardService(ApplicationDbContext context, IConfiguration con
         for (var i = 0; i < leaderboard.Count; i++)
             leaderboard[i].Rank = i + 1;
 
-        return leaderboard;
+        return Task.FromResult(leaderboard);
     }
 
     private static void ValidateRequest(LeaderboardRequestDto request)

@@ -1,7 +1,3 @@
-using Azure.Extensions.AspNetCore.Configuration.Secrets;
-using Microsoft.EntityFrameworkCore;
-using Azure.Identity;
-using Azure.Security.KeyVault.Secrets;
 using VC_SL.Data;
 using VC_SL.Services;
 
@@ -18,28 +14,7 @@ builder.Configuration
     .AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true)
     .AddEnvironmentVariables();
 
-if (!builder.Environment.IsDevelopment())
-{
-    var keyVaultUrl = builder.Configuration["KeyVaultUrl"];
-    if (!string.IsNullOrEmpty(keyVaultUrl))
-    {
-        try
-        {
-            var secretClient = new SecretClient(new Uri(keyVaultUrl), new DefaultAzureCredential());
-            builder.Configuration.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Warning: Failed to load Key Vault: {ex.Message}");
-        }
-    }
-}
-
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseMySql(
-        builder.Configuration.GetConnectionString("VcSlDbConnectionString"),
-        new MySqlServerVersion(new Version(8, 0, 36))
-    ));
+builder.Services.AddSingleton<JsonDataStore>();
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IWinrateService, WinrateService>();
